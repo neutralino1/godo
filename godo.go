@@ -75,14 +75,12 @@ func createTask(taskAttr Task, err binding.Errors, params martini.Params, db *Da
   return http.StatusOK, jsonString(list)
 }
 
-func updateTask(taskAttr Task, err binding.Errors, params martini.Params, db *mgo.Database) (int, string) {
+func updateTask(taskAttr Task, err binding.Errors, params martini.Params, db *Database) (int, string) {
   if err.Count() > 0 {
     return http.StatusConflict, jsonString(errorMsg{err.Overall["missing-requirement"]})
   }
-  listId := params["listId"]
-  taskAttr.Id = bson.ObjectIdHex(params["id"])
-  if dbErr := db.C("lists").Update(bson.M{"_id": bson.ObjectIdHex(listId), "tasks._id": taskAttr.Id}, bson.M{"$set": bson.M{"tasks.$.description": taskAttr.Description}}) ; dbErr != nil {
-    return http.StatusConflict, jsonString(dbErr)//errorMsg{"No list with id " + listId})
+  if dbErr := db.UpdateSub(&List{}, params["listId"], &taskAttr, params["id"]) ; dbErr != nil {
+    panic(dbErr)
   }
 
   return http.StatusOK, jsonString(taskAttr)

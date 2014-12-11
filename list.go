@@ -20,6 +20,10 @@ func (list *List) GetId() bson.ObjectId {
   return list.Id
 }
 
+func (list *List) Fields() map[string]interface{} {
+  return map[string]interface{}{}
+}
+
 func (listAttr *List) Validate(errors *binding.Errors, req *http.Request) {
   if listAttr.Name == "" {
     errors.Fields["name"] = "name is a required field"

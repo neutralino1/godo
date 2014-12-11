@@ -13,8 +13,25 @@ type Task struct {
   Done bool `bson:"done"`
 }
 
-func (taskAttr *Task) Validate(errors *binding.Errors, req *http.Request) {
-  if taskAttr.Description == "" {
+func (task *Task) Collection() string {
+  return "tasks"
+}
+
+func (task *Task) Fields() map[string]interface{} {
+  return map[string]interface{}{
+    "description": &task.Description,
+    "position": &task.Position,
+    "done": &task.Done,
+  }
+}
+
+func (task *Task) GetId() bson.ObjectId {
+  return task.Id
+}
+
+func (task *Task) Validate(errors *binding.Errors, req *http.Request) {
+  if task.Description == "" {
     errors.Fields["description"] = "description is a required field"
   }
 }
+
