@@ -11,6 +11,7 @@ import (
 
 func main() {
   m := martini.Classic()
+  m.Use(setContentType())
   m.Use(mongo())
 
   m.Get("/", home)
@@ -42,18 +43,22 @@ func jsonString(obj jsonConvertible) (s string) {
   return
 }
 
+func setContentType() martini.Handler {
+  return func (writer http.ResponseWriter) {
+    writer.Header().Set("Content-Type", "application/json")
+  }
+}
+
 func home() (int, string) {
   return http.StatusOK, "Now go do gogo!!"
 }
 
-func getTask(params martini.Params, writer http.ResponseWriter, db *mgo.Database) (int, string) {
-  writer.Header().Set("Content-Type", "application/json")
+func getTask(params martini.Params, db *mgo.Database) (int, string) {
   id := params["id"]
-  return http.StatusOK, id//jsonString(task)
+  return http.StatusOK, id
 }
 
-func createTask(taskAttr Task, err binding.Errors, params martini.Params, writer http.ResponseWriter, db *Database) (int, string) {
-  writer.Header().Set("Content-Type", "application/json")
+func createTask(taskAttr Task, err binding.Errors, params martini.Params, db *Database) (int, string) {
   listId := params["listId"]
   list := List{}
   if db.Find(&list, listId) != nil {
@@ -70,8 +75,7 @@ func createTask(taskAttr Task, err binding.Errors, params martini.Params, writer
   return http.StatusOK, jsonString(list)
 }
 
-func updateTask(taskAttr Task, err binding.Errors, params martini.Params, writer http.ResponseWriter, db *mgo.Database) (int, string) {
-  writer.Header().Set("Content-Type", "application/json")
+func updateTask(taskAttr Task, err binding.Errors, params martini.Params, db *mgo.Database) (int, string) {
   if err.Count() > 0 {
     return http.StatusConflict, jsonString(errorMsg{err.Overall["missing-requirement"]})
   }
@@ -84,8 +88,7 @@ func updateTask(taskAttr Task, err binding.Errors, params martini.Params, writer
   return http.StatusOK, jsonString(taskAttr)
 }
 
-func getLists(params martini.Params, writer http.ResponseWriter, db *Database) (int, string) {
-  writer.Header().Set("Content-Type", "application/json")
+func getLists(db *Database) (int, string) {
   lists := []List{}
   if err := db.All(new(List), &lists) ; err != nil {
     panic(err)
@@ -93,8 +96,7 @@ func getLists(params martini.Params, writer http.ResponseWriter, db *Database) (
   return http.StatusOK, jsonString(lists)
 }
 
-func getList(params martini.Params, writer http.ResponseWriter, db *Database) (int, string) {
-  writer.Header().Set("Content-Type", "application/json")
+func getList(params martini.Params, db *Database) (int, string) {
   id := params["id"]
   list := List{}
   if db.Find(&list, id) != nil {
@@ -103,8 +105,7 @@ func getList(params martini.Params, writer http.ResponseWriter, db *Database) (i
   return http.StatusOK, jsonString(list)
 }
 
-func createList(listAttr List, err binding.Errors, params martini.Params, writer http.ResponseWriter, db *Database) (int, string) {
-  writer.Header().Set("Content-Type", "application/json")
+func createList(listAttr List, err binding.Errors, db *Database) (int, string) {
   if err.Count() > 0 {
     return http.StatusConflict, jsonString(errorMsg{err.Overall["missing-requirement"]})
   }

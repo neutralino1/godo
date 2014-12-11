@@ -20,6 +20,11 @@ func mongo() martini.Handler {
   }
 }
 
+type Model interface {
+  GetId() bson.ObjectId
+  Collection() string
+}
+
 type Database struct {
   Conn *mgo.Database
 }
