@@ -23,8 +23,9 @@ func mongo() martini.Handler {
 type Model interface {
   GetId() bson.ObjectId
   Collection() string
-  Fields() map[string]interface{}
+  Attributes() map[string]interface{}
 }
+
 
 type Database struct {
   Conn *mgo.Database
@@ -48,7 +49,7 @@ func (db *Database) Update(m Model) error {
 
 func (db *Database) UpdateSub(doc Model, docId string, sub Model, id string) error {
   set := bson.M{}
-  for k, v := range sub.Fields() {
+  for k, v := range sub.Attributes() {
     set[sub.Collection() + ".$." + k] = v
   }
   return (*db).Conn.C(doc.Collection()).Update(bson.M{"_id": bson.ObjectIdHex(docId), sub.Collection() + "._id": bson.ObjectIdHex(id)}, bson.M{"$set": set})

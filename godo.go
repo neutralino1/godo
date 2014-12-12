@@ -79,11 +79,18 @@ func updateTask(taskAttr Task, err binding.Errors, params martini.Params, db *Da
   if err.Count() > 0 {
     return http.StatusConflict, jsonString(errorMsg{err.Overall["missing-requirement"]})
   }
-  if dbErr := db.UpdateSub(&List{}, params["listId"], &taskAttr, params["id"]) ; dbErr != nil {
-    panic(dbErr)
+  list := List{}
+  if dbErr := db.Find(&list, params["listId"]) ; dbErr != nil {
+    return http.StatusNotFound, jsonString(errorMsg{"No list found with id " + params["listId"]})
   }
+  task := list.FindTask(params["id"])
+  task.Update(&taskAttr)
+  panic(task.GetDescription())
+  //if dbErr := db.UpdateSub(&List{}, params["listId"], &taskAttr, params["id"]) ; dbErr != nil {
+  //  panic(dbErr)
+  //}
 
-  return http.StatusOK, jsonString(taskAttr)
+  return http.StatusOK, jsonString(task)
 }
 
 func getLists(db *Database) (int, string) {
