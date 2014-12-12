@@ -47,10 +47,10 @@ func (db *Database) Update(m Model) error {
   return (*db).Conn.C(m.Collection()).Update(bson.M{"_id": m.GetId()}, m)
 }
 
-func (db *Database) UpdateSub(doc Model, docId string, sub Model, id string) error {
+func (db *Database) UpdateSub(doc Model, docId string, sub Model) error {
   set := bson.M{}
   for k, v := range sub.Attributes() {
     set[sub.Collection() + ".$." + k] = v
   }
-  return (*db).Conn.C(doc.Collection()).Update(bson.M{"_id": bson.ObjectIdHex(docId), sub.Collection() + "._id": bson.ObjectIdHex(id)}, bson.M{"$set": set})
+  return (*db).Conn.C(doc.Collection()).Update(bson.M{"_id": bson.ObjectIdHex(docId), sub.Collection() + "._id": sub.GetId()}, bson.M{"$set": set})
 }

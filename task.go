@@ -30,23 +30,20 @@ func (task *Task) GetDescription() string {
 }
 
 func (task *Task) Set(name string, value interface{}) {
-  //*task.Description = "yaya"
   attribute := task.Attributes()[name]
-  //panic(reflect.TypeOf(attribute))
-  switch reflect.ValueOf(attribute) {
+  switch attribute.(type) {
+  default:
+    *attribute.(*string) = *value.(*string)
   case *int:
-    *attribute.(*int) = value
+    *attribute.(*int) = *value.(*int)
   case *string:
-    *attribute.(*string) = value
+    *attribute.(*string) = *value.(*string)
   }
-//   "yaya"//reflect.ValueOf(value)
-//  panic(attributes[name])
 }
 
 func (task *Task) Update(t *Task) {
   for name, attr := range t.Attributes() {
     if !reflect.ValueOf(attr).IsNil() {
-      //panic(reflect.ValueOf(attr).Elem())
       task.Set(name, attr)
     }
   }

@@ -85,10 +85,9 @@ func updateTask(taskAttr Task, err binding.Errors, params martini.Params, db *Da
   }
   task := list.FindTask(params["id"])
   task.Update(&taskAttr)
-  panic(task.GetDescription())
-  //if dbErr := db.UpdateSub(&List{}, params["listId"], &taskAttr, params["id"]) ; dbErr != nil {
-  //  panic(dbErr)
-  //}
+  if dbErr := db.UpdateSub(&List{}, params["listId"], task) ; dbErr != nil {
+    panic(dbErr)
+  }
 
   return http.StatusOK, jsonString(task)
 }
