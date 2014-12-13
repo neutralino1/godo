@@ -26,7 +26,6 @@ type Model interface {
   Attributes() map[string]interface{}
 }
 
-
 type Database struct {
   Conn *mgo.Database
 }

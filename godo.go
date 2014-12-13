@@ -5,7 +5,6 @@ import (
   "github.com/codegangsta/martini"
   "github.com/codegangsta/martini-contrib/binding"
   "encoding/json"
-  "labix.org/v2/mgo"
   "labix.org/v2/mgo/bson"
 )
 
@@ -18,8 +17,6 @@ func main() {
   m.Get("/lists", getLists)
   m.Get("/lists/:id", getList)
   m.Post("/lists", binding.Json(List{}), createList)
-  
-  m.Get("/tasks/:id", getTask)
   m.Post("/lists/:listId/tasks", binding.Json(Task{}), createTask)
   m.Put("/lists/:listId/tasks/:id", binding.Json(Task{}), updateTask)
 
@@ -53,12 +50,7 @@ func home() (int, string) {
   return http.StatusOK, "Now go do gogo!!"
 }
 
-func getTask(params martini.Params, db *mgo.Database) (int, string) {
-  id := params["id"]
-  return http.StatusOK, id
-}
-
-func createTask(taskAttr Task, err binding.Errors, params martini.Params, db *Database) (int, string) {
+func createTask(task Task, err binding.Errors, params martini.Params, db *Database) (int, string) {
   listId := params["listId"]
   list := List{}
   if db.Find(&list, listId) != nil {
@@ -67,8 +59,8 @@ func createTask(taskAttr Task, err binding.Errors, params martini.Params, db *Da
   if err.Count() > 0 {
     return http.StatusConflict, jsonString(errorMsg{err.Overall["description"]})
   }
-  taskAttr.Id = bson.NewObjectId()
-  list.Tasks = append(list.Tasks, taskAttr)
+  task.Id = bson.NewObjectId()
+  list.Tasks = append(list.Tasks, task)
   if dbErr := db.Update(&list) ; dbErr != nil {
     panic(dbErr)
   }
@@ -84,7 +76,7 @@ func updateTask(taskAttr Task, err binding.Errors, params martini.Params, db *Da
     return http.StatusNotFound, jsonString(errorMsg{"No list found with id " + params["listId"]})
   }
   task := list.FindTask(params["id"])
-  task.Update(&taskAttr)
+  updateModel(task, &taskAttr)
   if dbErr := db.UpdateSub(&List{}, params["listId"], task) ; dbErr != nil {
     panic(dbErr)
   }

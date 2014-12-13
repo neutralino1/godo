@@ -29,8 +29,8 @@ func (task *Task) GetDescription() string {
   return *(task.Description)
 }
 
-func (task *Task) Set(name string, value interface{}) {
-  attribute := task.Attributes()[name]
+func setModelAttribute(m Model, name string, value interface{}) {
+  attribute := m.Attributes()[name]
   switch attribute.(type) {
   default:
     *attribute.(*string) = *value.(*string)
@@ -38,13 +38,15 @@ func (task *Task) Set(name string, value interface{}) {
     *attribute.(*int) = *value.(*int)
   case *string:
     *attribute.(*string) = *value.(*string)
+  case *bool:
+    *attribute.(*bool) = *value.(*bool)
   }
 }
 
-func (task *Task) Update(t *Task) {
-  for name, attr := range t.Attributes() {
+func updateModel(m Model, n Model) {
+  for name, attr := range n.Attributes() {
     if !reflect.ValueOf(attr).IsNil() {
-      task.Set(name, attr)
+      setModelAttribute(m, name, attr)
     }
   }
 }
